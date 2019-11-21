@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE)
 library(fs)
 library(tidymodels)
+library(yardstick)
 library(tidyverse)
 
 ```
@@ -78,14 +79,33 @@ clean <- raw_data %>%
 # All of this is relatively simple because there is only one independent
 # variable in the model and the dependent variable only has two levels.
 
+#remember can't interpret coefficents same as liniear regression - for logistic regression divide by 4 to get roughly same effect as linear 
 model_1 <- glm(data = clean, dvote ~ gender, family = "binomial")
 
 x_1 <- clean %>% 
   mutate(prediction = predict(model_1, type = "response")) %>% 
   mutate(pred_dvote = as.factor(ifelse(prediction > mean(prediction), "Yes", "No")))
 
+#how well did our model perform?
+x_1 %>% 
+  metrics(truth = dvote, estimate = pred_dvote)
+
+#accuracy = proportion of how many your model got correct to total observations
+#kap = accounts for things you got right by random chance, 0 being completely by chance, 1 being in completely explained by model 
+
 ```
 
+```{r}
+
+model_2 <- glm(data = clean, dvote ~ gender + party + state + office, family = "binomial")
+
+x_2 <- clean %>% 
+  mutate(prediction = predict(model_2, type = "response")) %>% 
+  mutate(pred_dvote = as.factor(ifelse(prediction > mean(prediction), "Yes", "No")))
+
+metrics(data = x_2, truth = dvote, estimate = pred_dvote)
+
+```
 
 
 
